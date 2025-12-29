@@ -1,0 +1,16 @@
+# Dependencies
+node_modules/
+
+# Build Output
+dist/
+build/
+
+# Secrets
+.env
+.env.local
+.env.*.local
+
+# Cache
+.cache
+.npm/
+.pnpm-store/
