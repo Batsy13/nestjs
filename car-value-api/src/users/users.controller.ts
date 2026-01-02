@@ -1,24 +1,47 @@
-import { Body, Controller, Delete, Get, Param, Patch, Post, Query } from '@nestjs/common';
+import { Body, ConflictException, Controller, Delete, Get, NotFoundException, Param, Patch, Post, Query } from '@nestjs/common';
 import { CreateUserDto } from './dtos/create-user.dto';
+import { UsersService } from './users.service';
+import { UpdateUserDto } from './dtos/update-user.dto';
 
 @Controller("/auth")
 export class UsersController {
+  constructor(private usersService: UsersService) { }
 
-@Post("/signup")
-createUser(@Body() body: CreateUserDto) {
-  console.log(body);
-}
+  @Post("/signup")
+  async reateUser(@Body() body: CreateUserDto) {
+    const userExist = await this.usersService.find(body.email);
 
-@Get("/:id")
-findUser(@Param("id") id: number) {}
+    if (userExist) {
+      throw new ConflictException("User already exists")
+    }
 
-@Get()
-findAllUsers(@Query() email: string) {}
+    this.usersService.create(body.email, body.password)
+  }
 
-@Patch("/:id")
-updateUser(@Param("id") id: number) {}
+  @Get("/:id")
+  async findUser(@Param("id") id: string) {
+    const user = await this.usersService.findOne(parseInt(id));
 
-@Delete("/:id")
-removeUser(@Param("id") id: number) {}
+    if (!user) {
+      throw new NotFoundException("User not found");
+    }
+
+    return user;
+  }
+
+  @Get()
+  findAllUsers(@Query("email") email: string) {
+    return this.usersService.find(email);
+  }
+
+  @Patch("/:id")
+  updateUser(@Param("id") id: string, @Body() body: UpdateUserDto) {
+    return this.usersService.update(parseInt(id), body)
+  }
+
+  @Delete("/:id")
+  removeUser(@Param("id") id: string) {
+    return this.usersService.remove(parseInt(id));
+  }
 
 }
