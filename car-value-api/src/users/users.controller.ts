@@ -1,27 +1,50 @@
-import { Body, ConflictException, Controller, Delete, Get, NotFoundException, Param, Patch, Post, Query } from '@nestjs/common';
+import { Body, Controller, Delete, Get, NotFoundException, Param, Patch, Post, Query, Session, UseGuards } from '@nestjs/common';
 import { CreateUserDto } from './dtos/create-user.dto';
 import { UsersService } from './users.service';
 import { UpdateUserDto } from './dtos/update-user.dto';
 import { Serialize } from '../interceptors/serialize.interceptor';
 import { UserDto } from './dtos/user.dto';
+import { AuthService } from './auth.service';
+import { CurrentUser } from './decorators/current-user.decorator';
+import { AuthGuard } from '../guards/auth.guard';
 
 @Controller("/auth")
 @Serialize(UserDto)
 export class UsersController {
-  constructor(private usersService: UsersService) { }
+  constructor(private usersService: UsersService, private authService: AuthService) { }
+
+  // @Get("/whoami")
+  // whoAmI(@Session() session: any) {
+  //   return this.usersService.findOne(session.userId);
+  // }
+  
+  @Get("/whoami")
+  @UseGuards(AuthGuard)
+  whoAmI(@CurrentUser() user: string) {
+    return user
+  }
 
   @Post("/signup")
-  async reateUser(@Body() body: CreateUserDto) {
-    const userExist = await this.usersService.find(body.email);
+  async createUser(@Body() body: CreateUserDto, @Session() session: any) {
+    const user = await this.authService.signup(body.email, body.password);
+    session.userId = user.id;
+    return user;
+  }
 
-    if (userExist) {
-      throw new ConflictException("User already exists")
-    }
+  @Post("/signin")
+  async signin(@Body() body: CreateUserDto, @Session() session: any) {
+    const user = await this.authService.signin(body.email, body.password);
+    session.userId = user.id;
+    return user;
+  }
 
-    this.usersService.create(body.email, body.password)
+  @Post("/signout")
+  singOut(@Session() session: any){
+    session.userId = null;
   }
 
   @Get("/:id")
+  @UseGuards(AuthGuard)
   async findUser(@Param("id") id: string) {
     const user = await this.usersService.findOne(parseInt(id));
 
@@ -33,16 +56,19 @@ export class UsersController {
   }
 
   @Get()
+  @UseGuards(AuthGuard)
   findAllUsers(@Query("email") email: string) {
     return this.usersService.find(email);
   }
 
   @Patch("/:id")
+  @UseGuards(AuthGuard)
   updateUser(@Param("id") id: string, @Body() body: UpdateUserDto) {
-    return this.usersService.update(parseInt(id), body)
+    return this.usersService.update(parseInt(id), body);
   }
 
   @Delete("/:id")
+  @UseGuards(AuthGuard)
   removeUser(@Param("id") id: string) {
     return this.usersService.remove(parseInt(id));
   }
