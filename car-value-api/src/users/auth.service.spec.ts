@@ -2,7 +2,7 @@ import { Test } from "@nestjs/testing"
 import { AuthService } from "./auth.service"
 import { UsersService } from "./users.service";
 import { User } from "./user.entity";
-import { BadRequestException } from "@nestjs/common";
+import { BadRequestException, ConflictException } from "@nestjs/common";
 
 describe("Auth Service", () => {
   let service: AuthService;
@@ -46,7 +46,7 @@ describe("Auth Service", () => {
 
   it("throws an error if user signs up with email that is in use", async () => {
     await service.signup("poggerstest@teste.com", "poggr")
-    await expect(service.signup("poggerstest@teste.com", "poggr")).rejects.toThrow(BadRequestException)
+    await expect(service.signup("poggerstest@teste.com", "poggr")).rejects.toThrow(ConflictException)
   })
 
   it("throws an error if signin is called with an unused email", async () => {

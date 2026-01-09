@@ -1,4 +1,4 @@
-import { BadRequestException, Injectable, NotFoundException } from "@nestjs/common";
+import { BadRequestException, ConflictException, Injectable, NotFoundException } from "@nestjs/common";
 import { UsersService } from "./users.service";
 import { promisify } from "util";
 import { scrypt as _scrypt, randomBytes } from "crypto";
@@ -13,7 +13,7 @@ export class AuthService {
     // See if email is in use
     const users = await this.usersService.find(email);
     if (users.length) {
-      throw new BadRequestException("Email in use")
+      throw new ConflictException("Email in use")
     }
 
     // Hash the user password
