@@ -6,6 +6,9 @@ export class Report {
   @PrimaryGeneratedColumn()
   id: number;
 
+  @Column({ default: false })
+  approved: boolean;
+
   @Column()
   price: number;
 
@@ -19,7 +22,7 @@ export class Report {
   year: number;
 
   @Column()
-  lgn: number;
+  lng: number;
 
   @Column()
   lat: number;

@@ -12,11 +12,13 @@ export class ReportDto {
   @Expose()
   mileage: number;
   @Expose()
-  lgn: number;
+  lng: number;
   @Expose()
   lat: number;
   @Expose()
   price: number;
+  @Expose()
+  approved: boolean;  
 
   @Transform(({ obj }) => obj.user.id)
   @Expose()
